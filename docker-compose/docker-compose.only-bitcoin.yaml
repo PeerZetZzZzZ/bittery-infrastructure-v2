@@ -1,0 +1,41 @@
+version: "3"
+networks:
+  bittery-net-v2:
+
+services:
+
+  bitcoind:
+    restart: unless-stopped
+    container_name: bitcoind
+    image: btcpayserver/bitcoin:0.20.1
+    environment:
+      BITCOIN_NETWORK: ${BITCOIN_NETWORK}
+      BITCOIND_RPC_USER: ${BITCOIND_RPC_USER}
+      BITCOIND_RPC_PASSWORD: ${BITCOIND_RPC_PASSWORD}
+      BITCOIN_WALLETDIR: "/walletdata"
+      BITCOIN_EXTRA_ARGS: |
+        rpcssl=1
+        rpcport=43783
+        rpcbind=0.0.0.0:43783
+        port=39389
+        whitelist=0.0.0.0/0
+        zmqpubrawblock=tcp://0.0.0.0:28334
+        zmqpubrawtx=tcp://0.0.0.0:28335
+        rpcuser=${BITCOIND_RPC_USER}
+        rpcpassword=${BITCOIND_RPC_PASSWORD}
+        prune=50000
+        rpcthreads=300
+    volumes:
+    - ./volumes/bitcoind/datadir:/data
+    - ./volumes/bitcoind/wallet_datadir:/walletdata
+    networks:
+      - bittery-net-v2
+    ports:
+      # rpc
+      - 43783:43783
+      # zmqpubrawblock
+      - 28334:28334
+      # zmqpubrawtx
+      - 28335:28335
+      # port domyslnie 8333
+      - 39389:39389

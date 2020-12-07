@@ -1,0 +1,71 @@
+version: "3"
+
+networks:
+  bittery-net:
+    external:
+      name: docker-compose_bittery-net
+
+services:
+
+  $DOMAIN_lnd_bitcoin:
+    image: lnd
+    container_name: $DOMAIN_lnd_bitcoin
+    restart: unless-stopped
+    entrypoint: "lnd --bitcoin.active --bitcoin.regtest --bitcoin.node=bitcoind --bitcoind.rpcuser=lnd --rpclisten=0.0.0.0:10009 --bitcoind.rpcpass=afixedpasswordbecauselndsuckswithcookiefile --bitcoind.rpchost=bitcoind:43782 --bitcoind.zmqpubrawblock=tcp://bitcoind:28332 --bitcoind.zmqpubrawtx=tcp://bitcoind:28333"
+#    environment:
+#      LND_CHAIN: "btc"
+#      # jak tu zmimenisz na domene to bedzie IP np kontenera
+#      # moze byc rownie dobrze nic
+#      # tutaj chyuba sobie poradzi jak bedzie na zewnętrznej domenie, bo jeśli nie to trzeba będzie bardziej
+#      # złożone cyrki robić
+#      LND_EXTERNALIP: $DOMAIN
+#      LND_PORT: $LND_PORT
+#      LND_ALIAS: ${LIGHTNING_ALIAS}
+#      LND_ENVIRONMENT: ${NBITCOIN_NETWORK}
+#      LND_READY_FILE: /root/.nbxplorer/btc_fully_synched
+#      LND_EXTRA_ARGS: |
+#        restlisten=0.0.0.0:8080
+#        rpclisten=0.0.0.0:10009
+#        listen=0.0.0.0:$LND_PORT
+#        bitcoin.node=bitcoind
+#        bitcoind.rpcuser=lnd
+#        bitcoind.rpcpass=afixedpasswordbecauselndsuckswithcookiefile
+#        bitcoind.rpchost=bitcoind:43782
+#        bitcoind.zmqpubrawblock=tcp://bitcoind:28332
+#        bitcoind.zmqpubrawtx=tcp://bitcoind:28333
+#        adminmacaroonpath=/data/admin.macaroon
+#        invoicemacaroonpath=/data/invoice.macaroon
+#        readonlymacaroonpath=/data/readonly.macaroon
+#        notls=0
+#        tlscertpath=/data/tls.cert
+#        tlskeypath=/data/tls.key
+#        tlsextradomain=$DOMAIN
+#        debuglevel=info
+#      HIDDENSERVICE_NAME: lnd
+#      HIDDENSERVICE_PORT: $LND_PORT
+    volumes:
+      - ../../volumes/lnd/$DOMAIN/bitcoin/datadir:/root/.lnd
+    networks:
+      - bittery-net
+    # $LND_PORT must be exposed because it's the LND port for outside
+#    ports:
+#      - $LND_PORT:$LND_PORT
+    expose:
+      - 8080
+      - 10009
+    ports:
+      - 9735:9735
+
+  $DOMAIN_rtl:
+    image: rtl
+    container_name: $DOMAIN_rtl
+    environment:
+      - RTL_CONFIG_PATH=/config
+    volumes:
+      - ../../volumes/lnd/$DOMAIN/bitcoin/datadir:/data/macaroon
+      - ../../volumes/rtl/$DOMAIN/channel_backup:/data/channel_backup
+      - ../../volumes/rtl/$DOMAIN/config:/config
+    networks:
+      - bittery-net
+    expose:
+      - 3000

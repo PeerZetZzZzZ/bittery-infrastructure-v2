@@ -1,0 +1,45 @@
+version: '3.3'
+
+networks:
+  bittery-net:
+    external:
+      name: docker-compose_bittery-net
+
+services:
+  bittery_wordpress_mysql_db:
+    container_name: bittery_wordpress_mysql_db
+    image: mysql:5.7
+    restart: always
+    environment:
+      # CHANGE IT
+      MYSQL_ROOT_PASSWORD: somewordpress
+      # CHANGE IT
+      MYSQL_DATABASE: wordpress
+      # CHANGE IT
+      MYSQL_USER: wordpress
+      # CHANGE IT
+      MYSQL_PASSWORD: wordpress
+    volumes:
+      - ../volumes/mysql:/var/lib/mysql
+    networks:
+      - bittery-net
+    expose:
+      - 3306
+
+  bittery_wordpress:
+    container_name: bittery_wordpress
+    depends_on:
+      - bittery_wordpress_mysql_db
+    image: wordpress:latest
+    restart: always
+    environment:
+      WORDPRESS_DB_HOST: bittery_wordpress_mysql_db:3306
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: wordpress
+      WORDPRESS_DB_NAME: wordpress
+    volumes:
+      - ../volumes/wordpress:/var/www/html
+    networks:
+      - bittery-net
+    expose:
+      - 80
